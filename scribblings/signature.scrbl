@@ -28,7 +28,7 @@ an alternative syntax for indy-dependent contracts.
 The @racket[-->] defines an indy-dependent contract like @racket[->i].  Unlike @racket[->i],
 @racket[-->] does not require contract expressions to declare dependencies on other arguments.
 Instead, it infers them automatically using the names of arguments and result values declared
-in the signature.
+in the signature. Warning: @racket[-->] is not currently as efficient as @racket[->i] and has a higher performance overhead.
 
 For example, the contract:
 @racketblock[(->i ([x number?]
