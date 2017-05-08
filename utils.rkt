@@ -1,10 +1,12 @@
 #lang racket/base
 
 (provide (for-syntax compare-arities
-                     make-procedure-contract))
+                     make-procedure-contract
+                     specs->signature))
 
 (require (for-syntax racket/base
                      racket/list
+                     racket/match
                      racket/syntax
                      syntax/parse
                      syntax/to-string
@@ -242,6 +244,48 @@
                        "procedure that returns 1 result"
                        (format "procedure that returns ~a results" spec-results))))
            #t))))
+
+(define-for-syntax (spec->signature spec)
+  (match spec
+    [(mandatory-spec id uses ctc index)
+     (if ctc #`((#,id : #,ctc)) #`(#,id))]
+    [(optional-spec id uses ctc index)
+     (if ctc #`(([#,id] : #,ctc)) #`([#,id]))]
+    [(mandatory-keyword-spec id uses ctc keyword)
+     (if ctc #`(#,keyword (#,id : #,ctc)) #`(#,keyword #,id))]
+    [(optional-keyword-spec id uses ctc keyword)
+     (if ctc #`(#,keyword ([#,id] : #,ctc)) #`(#,keyword [#,id]))]
+    [(rest-spec id uses ctc index)
+     (if ctc #`((#,id : #,ctc)) #`(#,id))]
+    [(result-spec id uses ctc index)
+     (if ctc #`((#,id : #,ctc)) #`(#,id))]))
+
+(define-for-syntax (specs->signature specs)
+  (let ([mandatory (sort (filter mandatory-spec? specs)
+                         < #:key mandatory-spec-index)]
+        [optional  (sort (filter optional-spec? specs)
+                         < #:key optional-spec-index)]
+        [mandatory-keyword (filter mandatory-keyword-spec? specs)]
+        [optional-keyword (filter optional-keyword-spec? specs)]
+        [rest (let ([result (filter rest-spec? specs)])
+                (if (empty? result)
+                    #f
+                    (first result)))]
+        [result (sort (filter result-spec? specs)
+                      < #:key result-spec-index)])
+    (if rest
+        #`((#,@(apply append-syntax (map spec->signature mandatory))
+            #,@(apply append-syntax (map spec->signature optional))
+            #,@(apply append-syntax (map spec->signature mandatory-keyword))
+            #,@(apply append-syntax (map spec->signature optional-keyword))
+            ..
+            #,@(spec->signature rest))
+           (#,@(apply append-syntax (map spec->signature result))))
+        #`((#,@(apply append-syntax (map spec->signature mandatory))
+            #,@(apply append-syntax (map spec->signature optional))
+            #,@(apply append-syntax (map spec->signature mandatory-keyword))
+            #,@(apply append-syntax (map spec->signature optional-keyword)))
+           (#,@(apply append-syntax (map spec->signature result)))))))
 
 (define-for-syntax (make-procedure-contract name stx fail)
   (syntax-parse stx

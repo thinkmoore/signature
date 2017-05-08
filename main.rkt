@@ -27,13 +27,16 @@
   (require rackunit)
   
   (define/contract (foo x [y x] #:foo foo . rest)
-    (x ([y] : (lambda (y) (equal? x y))) #:foo foo .. (rest : (listof integer?)) . --> . (z : integer?))
+    (--> (x ([y] : (lambda (y) (equal? x y))) #:foo foo .. (rest : (listof integer?)))
+         ((z : integer?)))
     x)
 
-  (define/sig (foo2 x (y : (lambda (y) (equal? x y))) #:foo foo .. (rest : (listof integer?)) (z : integer?))
+  (define/sig (foo2 (x (y : (lambda (y) (equal? x y))) #:foo foo .. (rest : (listof integer?)))
+                    ((z : integer?)))
     x)
 
-  (define/sig (foo3 x (y : (lambda (y) (equal? x y))) #:foo foo .. (rest : (listof integer?)) (z : integer?))
+  (define/sig (foo3 (x (y : (lambda (y) (equal? x y))) #:foo foo .. (rest : (listof integer?)))
+                    ((z : integer?)))
     (values x x))
 
   (check-not-exn (lambda () (foo 1 1 #:foo 1 1)))
@@ -43,3 +46,23 @@
   (check-exn exn:fail:contract? (lambda () (foo2 1 2 #:foo 1 1)))
   (check-exn exn:fail:contract? (lambda () (foo2 1 1 #:foo 1 'a)))
   (check-exn exn:fail:contract? (lambda () (foo3 1 1 #:foo 1 1))))
+
+(module defs racket
+  (provide (contract-out [test-mod (->i ([f (-> integer? integer?)]
+                                         [x (f) f])
+                                        ()
+                                        [result integer?])]))
+  (define (test-mod f x)
+    (f x)))
+
+(require (submod "." defs))
+
+(define/contract (test f x)
+  (->i ([f (-> integer? integer?)]
+        [x (f) f])
+       ()
+       [result integer?])
+  (f x))
+
+(define/sig (test-sig ((f : (-> integer? integer?)) (x : f)) ((result : integer?)))
+  (f x))

@@ -11,7 +11,7 @@ Syntax classes and utilities for defining function signatures with contracts, in
 an alternative syntax for indy-dependent contracts.
 
 @defform*/subs[#:literals (: ..)
-[(--> argument ... optional-rest results)]
+[(--> (argument ... optional-rest) (result ...))]
 ([argument id+ctc
            (code:line keyword id+ctc)]
  [id+ctc   id-or-optional
@@ -20,8 +20,6 @@ an alternative syntax for indy-dependent contracts.
                  [id]]
  [optional-rest (code:line)
   (code:line .. id+ctc)]
- [results result
-          (result ...)]
  [result (id+ctc)])
 ]{
 
@@ -35,8 +33,8 @@ For example, the contract:
                    [y (x) (>=/c x)])
                   [result (x y) (and/c number? (>=/c (+ x y)))])]
 can be written as the following.
-@racketblock[(--> (x : number?) (y : (>=/c x))
-                  (result : (and/c number? (>=/c (+ x y)))))]
+@racketblock[(--> ((x : number?) (y : (>=/c x)))
+                  ((result : (and/c number? (>=/c (+ x y))))))]
 
 Unlike @racket[->i], mandatory and optional arguments are not specified separately.
 The contract
@@ -44,8 +42,8 @@ The contract
                   (#:y [y (x) (>=/c x)])
                   [result (x y) (and/c number? (>=/c (+ x y)))])]
 can be written as the following.
-@racketblock[(--> #:x (x : number?) #:y ([y] : (>=/c x))
-                  (result : (and/c number? (>=/c (+ x y)))))]
+@racketblock[(--> (#:x (x : number?) #:y ([y] : (>=/c x)))
+		  ((result : (and/c number? (>=/c (+ x y))))))]
 
 Like @racket[->i], the contract expressions are not always evaluated in
 order. If there are optional arguments that are not supplied, then
@@ -64,18 +62,17 @@ called @racket[the-unsupplied-arg] value.
                  [id default-expr]]
  [optional-rest (code:line)
   (code:line .. id+ctc)]
- [results result
-          (result ...)]
  [result (id+ctc)])
 ]{
 
 Defines a procedure with the given signature and applies the corresponding contract.
 
 For example,
-@racketblock[(define/sig (add #:x (x : number?) #:y ([y x] : (>=/c x)) (result : (and/c number? (>=/c (+ x y)))))
+@racketblock[(define/sig (add (#:x (x : number?) #:y ([y x] : (>=/c x))) ((result : (and/c number? (>=/c (+ x y))))))
                (+ x y))]
 is equivalent to the following.
 @racketblock[(define/contract (add #:x x #:y [y x])
-               (--> #:x (x : number?) #:y ([y] : (>=/c x)) (result : (and/c number? (>=/c (+ x y)))))
+               (--> (#:x (x : number?) #:y ([y] : (>=/c x)))
+	            ((result : (and/c number? (>=/c (+ x y))))))
                (+ x y))]
 }
