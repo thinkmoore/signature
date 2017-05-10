@@ -19,8 +19,9 @@
 (define-splicing-syntax-class arg
   #:datum-literals (: ..)
   #:attributes (mandatory-id mandatory-ctc optional-id optional-ctc
-                             mandatory-kw mandatory-kw-id mandatory-kw-ctc
-                             optional-kw optional-kw-id optional-kw-ctc)
+                mandatory-kw mandatory-kw-id mandatory-kw-ctc
+                optional-kw optional-kw-id optional-kw-ctc
+                decl invoc)
   (pattern mandatory-id:id-not-reserved
            #:attr mandatory-ctc #f
            #:attr optional-id #f
@@ -30,7 +31,9 @@
            #:attr mandatory-kw-ctc #f
            #:attr optional-kw #f
            #:attr optional-kw-id #f
-           #:attr optional-kw-ctc #f)
+           #:attr optional-kw-ctc #f
+           #:attr decl #'(mandatory-id)
+           #:attr invoc #'(mandatory-id))
   (pattern (mandatory-id:id-not-reserved : mandatory-ctc:expr)
            #:attr optional-id #f
            #:attr optional-ctc #f
@@ -39,7 +42,9 @@
            #:attr mandatory-kw-ctc #f
            #:attr optional-kw #f
            #:attr optional-kw-id #f
-           #:attr optional-kw-ctc #f)
+           #:attr optional-kw-ctc #f
+           #:attr decl #'(mandatory-id)
+           #:attr invoc #'(mandatory-id))
   (pattern [optional-id:id-not-reserved]
            #:attr mandatory-id #f
            #:attr mandatory-ctc #f
@@ -49,7 +54,9 @@
            #:attr mandatory-kw-ctc #f
            #:attr optional-kw #f
            #:attr optional-kw-id #f
-           #:attr optional-kw-ctc #f)
+           #:attr optional-kw-ctc #f
+           #:attr decl #'([optional-id the-unsupplied-arg])
+           #:attr invoc #'(optional-id))
   (pattern ([optional-id:id-not-reserved] : optional-ctc:expr)
            #:attr mandatory-id #f
            #:attr mandatory-ctc #f
@@ -58,7 +65,9 @@
            #:attr mandatory-kw-ctc #f
            #:attr optional-kw #f
            #:attr optional-kw-id #f
-           #:attr optional-kw-ctc #f)
+           #:attr optional-kw-ctc #f
+           #:attr decl #'([optional-id the-unsupplied-arg])
+           #:attr invoc #'(optional-id))
   (pattern (~seq mandatory-kw:keyword mandatory-kw-id:id-not-reserved)
            #:attr mandatory-id #f
            #:attr mandatory-ctc #f
@@ -67,7 +76,9 @@
            #:attr mandatory-kw-ctc #f
            #:attr optional-kw #f
            #:attr optional-kw-id #f
-           #:attr optional-kw-ctc #f)
+           #:attr optional-kw-ctc #f
+           #:attr decl #'(mandatory-kw mandatory-kw-id)
+           #:attr invoc #'(mandatory-kw mandatory-kw-id))
   (pattern (~seq mandatory-kw:keyword (mandatory-kw-id:id-not-reserved : mandatory-kw-ctc:expr))
            #:attr mandatory-id #f
            #:attr mandatory-ctc #f
@@ -75,7 +86,9 @@
            #:attr optional-ctc #f
            #:attr optional-kw #f
            #:attr optional-kw-id #f
-           #:attr optional-kw-ctc #f)
+           #:attr optional-kw-ctc #f
+           #:attr decl #'(mandatory-kw mandatory-kw-id)
+           #:attr invoc #'(mandatory-kw mandatory-kw-id))
   (pattern (~seq optional-kw:keyword [optional-kw-id:id-not-reserved])
            #:attr mandatory-id #f
            #:attr mandatory-ctc #f
@@ -84,7 +97,9 @@
            #:attr mandatory-kw #f
            #:attr mandatory-kw-id #f
            #:attr mandatory-kw-ctc #f
-           #:attr optional-kw-ctc #f)
+           #:attr optional-kw-ctc #f
+           #:attr decl #'(optional-kw [optional-kw-id the-unsupplied-arg])
+           #:attr invoc #'(optional-kw optional-kw-id))
   (pattern (~seq optional-kw:keyword ([optional-kw-id:id-not-reserved] : optional-kw-ctc:expr))
            #:attr mandatory-id #f
            #:attr mandatory-ctc #f
@@ -92,7 +107,9 @@
            #:attr optional-ctc #f
            #:attr mandatory-kw #f
            #:attr mandatory-kw-id #f
-           #:attr mandatory-kw-ctc #f))
+           #:attr mandatory-kw-ctc #f
+           #:attr decl #'(optional-kw [optional-kw-id the-unsupplied-arg])
+           #:attr invoc #'(optional-kw optional-kw-id)))
 
 (define-syntax-class rest-arg
   #:datum-literals (: ..)
@@ -104,10 +121,10 @@
 (define-splicing-syntax-class arg/defaults
   #:datum-literals (: ..)
   #:attributes (mandatory-id mandatory-ctc
-                             optional-id optional-default optional-ctc
-                             mandatory-kw mandatory-kw-id mandatory-kw-ctc
-                             optional-kw optional-kw-id optional-kw-default optional-kw-ctc
-                             decl sig)
+                optional-id optional-default optional-ctc
+                mandatory-kw mandatory-kw-id mandatory-kw-ctc
+                optional-kw optional-kw-id optional-kw-default optional-kw-ctc
+                decl sig invoc)
   (pattern mandatory-id:id-not-reserved
            #:attr mandatory-ctc #f
            #:attr optional-id #f
@@ -121,7 +138,8 @@
            #:attr optional-kw-default #f
            #:attr optional-kw-ctc #f
            #:attr decl #'(mandatory-id)
-           #:attr sig #'(mandatory-id))
+           #:attr sig #'(mandatory-id)
+           #:attr invoc #'(mandatory-id))
   (pattern (mandatory-id:id-not-reserved : mandatory-ctc:expr)
            #:attr optional-id #f
            #:attr optional-default #f
@@ -134,7 +152,8 @@
            #:attr optional-kw-default #f
            #:attr optional-kw-ctc #f
            #:attr decl #'(mandatory-id)
-           #:attr sig #'((mandatory-id : mandatory-ctc)))
+           #:attr sig #'((mandatory-id : mandatory-ctc))
+           #:attr invoc #'(mandatory-id))
   (pattern [optional-id:id-not-reserved optional-default:expr]
            #:attr mandatory-id #f
            #:attr mandatory-ctc #f
@@ -146,8 +165,9 @@
            #:attr optional-kw-id #f
            #:attr optional-kw-default #f
            #:attr optional-kw-ctc #f
-           #:attr decl #'(optional-id optional-default)
-           #:attr sig #'(optional-id))
+           #:attr decl #'((optional-id optional-default))
+           #:attr sig #'((optional-id))
+           #:attr invoc #'(optional-id))
   (pattern ([optional-id:id-not-reserved optional-default:expr] : optional-ctc:expr)
            #:attr mandatory-id #f
            #:attr mandatory-ctc #f
@@ -159,7 +179,8 @@
            #:attr optional-kw-default #f
            #:attr optional-kw-ctc #f
            #:attr decl #'((optional-id optional-default))
-           #:attr sig #'(((optional-id) : optional-ctc)))
+           #:attr sig #'(((optional-id) : optional-ctc))
+           #:attr invoc #'(optional-id))
   (pattern (~seq mandatory-kw:keyword mandatory-kw-id:id-not-reserved)
            #:attr mandatory-id #f
            #:attr mandatory-ctc #f
@@ -172,7 +193,8 @@
            #:attr optional-kw-default #f
            #:attr optional-kw-ctc #f
            #:attr decl #'(mandatory-kw mandatory-kw-id)
-           #:attr sig #'(mandatory-kw mandatory-kw-id))
+           #:attr sig #'(mandatory-kw mandatory-kw-id)
+           #:attr invoc #'(mandatory-kw mandatory-kw-id))
   (pattern (~seq mandatory-kw:keyword (mandatory-kw-id:id-not-reserved : mandatory-kw-ctc:expr))
            #:attr mandatory-id #f
            #:attr mandatory-ctc #f
@@ -184,7 +206,8 @@
            #:attr optional-kw-default #f
            #:attr optional-kw-ctc #f
            #:attr decl #'(mandatory-kw mandatory-kw-id)
-           #:attr sig #'(mandatory-kw (mandatory-kw-id : mandatory-kw-ctc)))
+           #:attr sig #'(mandatory-kw (mandatory-kw-id : mandatory-kw-ctc))
+           #:attr invoc #'(mandatory-kw mandatory-kw-id))
   (pattern (~seq optional-kw:keyword [optional-kw-id:id-not-reserved optional-kw-default:expr])
            #:attr mandatory-id #f
            #:attr mandatory-ctc #f
@@ -196,7 +219,8 @@
            #:attr mandatory-kw-ctc #f
            #:attr optional-kw-ctc #f
            #:attr decl #'(optional-kw (optional-kw-id optional-kw-default))
-           #:attr sig #'(optional-kw (optional-kw-id)))
+           #:attr sig #'(optional-kw (optional-kw-id))
+           #:attr invoc #'(optional-kw optional-kw-id))
   (pattern (~seq optional-kw:keyword ([optional-kw-id:id-not-reserved optional-kw-default:expr] : optional-kw-ctc:expr))
            #:attr mandatory-id #f
            #:attr mandatory-ctc #f
@@ -207,7 +231,8 @@
            #:attr mandatory-kw-id #f
            #:attr mandatory-kw-ctc #f
            #:attr decl #'(optional-kw (optional-kw-id optional-kw-default))
-           #:attr sig #'(optional-kw ([optional-kw-id] : optional-kw-ctc))))
+           #:attr sig #'(optional-kw ([optional-kw-id] : optional-kw-ctc))
+           #:attr invoc #'(optional-kw optional-kw-id)))
 
 (define-syntax-class result
   #:datum-literals (: ..)
@@ -276,7 +301,7 @@
 
 (define-splicing-syntax-class sig
   #:datum-literals (: ..)
-  #:attributes (arity specs)
+  #:attributes (arity specs decl invoc)
   (pattern (~seq (arg:arg ...) (result:result ...))
            #:attr arity (arity (length (filter identity (attribute arg.mandatory-id)))
                                (length (filter identity (attribute arg.optional-id)))
@@ -310,6 +335,8 @@
                                                      (syntax->list #'ids)
                                                      (attribute result.id)
                                                      (attribute result.ctc)))
+           #:attr decl #`(#,@(apply append-syntax (attribute arg.decl)))
+           #:attr invoc #`(#,@(apply append-syntax (attribute arg.invoc)))
            #:fail-when (duplicate-ids? (syntax->list #'ids))
            "duplicate identifiers in signature"
            #:fail-when (let ([result-ids (map spec-id (filter result-spec? (attribute specs)))]
@@ -358,6 +385,8 @@
                                                      (syntax->list #'ids)
                                                      (attribute result.id)
                                                      (attribute result.ctc)))
+           #:attr decl #`(#,@(apply append-syntax (attribute arg.decl)) . rest.id)
+           #:attr invoc #`(#,@(apply append-syntax (attribute arg.invoc)) . rest.id)
            #:fail-when (duplicate-ids? (syntax->list #'ids))
            "duplicate identifiers in signature"
            #:fail-when (let ([result-ids (map spec-id (filter result-spec? (attribute specs)))]
@@ -371,7 +400,7 @@
 
 (define-splicing-syntax-class sig/defaults
   #:datum-literals (: ..)
-  #:attributes (arity decl sig)
+  #:attributes (arity decl sig invoc)
   (pattern (~seq (arg:arg/defaults ...) (result:result ...))
            #:attr arity (arity (length (filter identity (attribute arg.mandatory-id)))
                                (length (filter identity (attribute arg.optional-id)))
@@ -380,6 +409,7 @@
                                (length (attribute result)))
            #:attr sig #`((#,@(apply append-syntax (attribute arg.sig))) (result ...))
            #:attr decl #`(#,@(apply append-syntax (attribute arg.decl)))
+           #:attr invoc #`(#,@(apply append-syntax (attribute arg.invoc)))
            #:fail-when (duplicate-ids? (append (attribute arg.mandatory-id)
                                                (attribute arg.optional-id)
                                                (attribute arg.mandatory-kw-id)
@@ -394,6 +424,7 @@
                                (length (attribute result)))
            #:attr sig #`((#,@(apply append-syntax (attribute arg.sig)) .. rest) (result ...))
            #:attr decl #`(#,@(apply append-syntax (attribute arg.decl)) . rest.id)
+           #:attr invoc #`(#,@(apply append-syntax (attribute arg.invoc)) . rest.id)
            #:fail-when (duplicate-ids? (append (attribute arg.mandatory-id)
                                                (attribute arg.optional-id)
                                                (attribute arg.mandatory-kw-id)

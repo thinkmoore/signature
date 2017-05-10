@@ -301,10 +301,12 @@
                      [spec-results  (arity-results (attribute signature.arity))])
          #`(make-contract
             #:name '#,name
-            #:first-order (lambda (value) (let/ec return ((make-check-arity (lambda (expected) (return #f))
-                                                                            mandatory optional
-                                                                            mandatory-kw optional-kw
-                                                                            spec-results) value)))
+            #:first-order
+            (lambda (value)
+              (let/ec return ((make-check-arity (lambda (expected) (return #f))
+                                                mandatory optional
+                                                mandatory-kw optional-kw
+                                                spec-results) value)))
             #:late-neg-projection
             (lambda (partial-blame)
               (lambda (value party)
