@@ -274,18 +274,20 @@
         [result (sort (filter result-spec? specs)
                       < #:key result-spec-index)])
     (if rest
-        #`((#,@(apply append-syntax (map spec->signature mandatory))
-            #,@(apply append-syntax (map spec->signature optional))
-            #,@(apply append-syntax (map spec->signature mandatory-keyword))
-            #,@(apply append-syntax (map spec->signature optional-keyword))
-            ..
-            #,@(spec->signature rest))
-           (#,@(apply append-syntax (map spec->signature result))))
-        #`((#,@(apply append-syntax (map spec->signature mandatory))
-            #,@(apply append-syntax (map spec->signature optional))
-            #,@(apply append-syntax (map spec->signature mandatory-keyword))
-            #,@(apply append-syntax (map spec->signature optional-keyword)))
-           (#,@(apply append-syntax (map spec->signature result)))))))
+        #`(#,@(apply append-syntax (map spec->signature mandatory))
+           #,@(apply append-syntax (map spec->signature optional))
+           #,@(apply append-syntax (map spec->signature mandatory-keyword))
+           #,@(apply append-syntax (map spec->signature optional-keyword))
+           ..
+           #,@(spec->signature rest)
+           ->
+           #,@(apply append-syntax (map spec->signature result)))
+        #`(#,@(apply append-syntax (map spec->signature mandatory))
+           #,@(apply append-syntax (map spec->signature optional))
+           #,@(apply append-syntax (map spec->signature mandatory-keyword))
+           #,@(apply append-syntax (map spec->signature optional-keyword))
+           ->
+           #,@(apply append-syntax (map spec->signature result))))))
 
 (define-for-syntax (make-procedure-contract name stx fail)
   (syntax-parse stx
