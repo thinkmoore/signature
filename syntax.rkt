@@ -14,10 +14,10 @@
 
 (define-syntax-class id-not-reserved
   (pattern id:id
-           #:when (not (member (syntax->datum #'id) '(: ..)))))
+           #:when (not (member (syntax->datum #'id) '(: .. ->)))))
 
 (define-splicing-syntax-class arg
-  #:datum-literals (: ..)
+  #:datum-literals (: .. ->)
   #:attributes (mandatory-id mandatory-ctc optional-id optional-ctc
                 mandatory-kw mandatory-kw-id mandatory-kw-ctc
                 optional-kw optional-kw-id optional-kw-ctc
@@ -112,14 +112,14 @@
            #:attr invoc #'(optional-kw optional-kw-id)))
 
 (define-syntax-class rest-arg
-  #:datum-literals (: ..)
+  #:datum-literals (: .. ->)
   #:attributes (id ctc)
   (pattern id:id-not-reserved
            #:attr ctc #f)
   (pattern (id:id-not-reserved : ctc:expr)))
 
 (define-splicing-syntax-class arg/defaults
-  #:datum-literals (: ..)
+  #:datum-literals (: .. ->)
   #:attributes (mandatory-id mandatory-ctc
                 optional-id optional-default optional-ctc
                 mandatory-kw mandatory-kw-id mandatory-kw-ctc
@@ -235,7 +235,7 @@
            #:attr invoc #'(optional-kw optional-kw-id)))
 
 (define-syntax-class result
-  #:datum-literals (: ..)
+  #:datum-literals (: .. ->)
   #:attributes (id ctc)
   (pattern id:id-not-reserved
            #:attr ctc #f)
@@ -300,9 +300,9 @@
                  (ctor id (get-expr-uses ids ctc) ctc keyword)))))
 
 (define-splicing-syntax-class sig
-  #:datum-literals (: ..)
+  #:datum-literals (: .. ->)
   #:attributes (arity specs decl invoc)
-  (pattern (~seq (arg:arg ...) (result:result ...))
+  (pattern (~seq arg:arg ... -> result:result ...)
            #:attr arity (arity (length (filter identity (attribute arg.mandatory-id)))
                                (length (filter identity (attribute arg.optional-id)))
                                (map syntax->datum (filter identity (attribute arg.mandatory-kw)))
@@ -347,7 +347,7 @@
                                          result-ids))
                                 arg-uses))
            "argument contracts cannot refer to results")
-  (pattern (~seq (arg:arg ... .. rest:rest-arg) (result:result ...))
+  (pattern (~seq arg:arg ... .. rest:rest-arg -> result:result ...)
            #:attr arity (arity (length (filter identity (attribute arg.mandatory-id)))
                                #f
                                (map syntax->datum (filter identity (attribute arg.mandatory-kw)))
@@ -399,15 +399,15 @@
            "argument contracts cannot refer to results"))
 
 (define-splicing-syntax-class sig/defaults
-  #:datum-literals (: ..)
+  #:datum-literals (: .. ->)
   #:attributes (arity decl sig invoc)
-  (pattern (~seq (arg:arg/defaults ...) (result:result ...))
+  (pattern (~seq arg:arg/defaults ... -> result:result ...)
            #:attr arity (arity (length (filter identity (attribute arg.mandatory-id)))
                                (length (filter identity (attribute arg.optional-id)))
                                (map syntax->datum (filter identity (attribute arg.mandatory-kw)))
                                (map syntax->datum (filter identity (attribute arg.optional-kw)))
                                (length (attribute result)))
-           #:attr sig #`((#,@(apply append-syntax (attribute arg.sig))) (result ...))
+           #:attr sig #`(#,@(apply append-syntax (attribute arg.sig)) -> result ...)
            #:attr decl #`(#,@(apply append-syntax (attribute arg.decl)))
            #:attr invoc #`(#,@(apply append-syntax (attribute arg.invoc)))
            #:fail-when (duplicate-ids? (append (attribute arg.mandatory-id)
@@ -416,13 +416,13 @@
                                                (attribute arg.optional-kw-id)
                                                (attribute result.id)))
            "duplicate identifiers in signature")
-  (pattern (~seq (arg:arg/defaults ... .. rest:rest-arg) (result:result ...))
+  (pattern (~seq arg:arg/defaults ... .. rest:rest-arg -> result:result ...)
            #:attr arity (arity (length (filter identity (attribute arg.mandatory-id)))
                                #f
                                (map syntax->datum (filter identity (attribute arg.mandatory-kw)))
                                (map syntax->datum (filter identity (attribute arg.optional-kw)))
                                (length (attribute result)))
-           #:attr sig #`((#,@(apply append-syntax (attribute arg.sig)) .. rest) (result ...))
+           #:attr sig #`(#,@(apply append-syntax (attribute arg.sig)) .. rest -> result ...)
            #:attr decl #`(#,@(apply append-syntax (attribute arg.decl)) . rest.id)
            #:attr invoc #`(#,@(apply append-syntax (attribute arg.invoc)) . rest.id)
            #:fail-when (duplicate-ids? (append (attribute arg.mandatory-id)

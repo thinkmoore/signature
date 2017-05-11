@@ -1,6 +1,6 @@
 #lang racket/base
 
-(provide --> define/sig)
+(provide proc/c define/sig)
 
 (require (for-syntax racket/base
                      syntax/parse
@@ -8,7 +8,7 @@
          racket/contract
          "utils.rkt")
 
-(define-syntax (--> stx)
+(define-syntax (proc/c stx)
   (syntax-parse stx
     [(_ signature:sig)
      (make-procedure-contract stx #'signature error)]))
@@ -17,7 +17,7 @@
   (syntax-parse stx
     [(_ (name:id signature:sig/defaults) body ...+)
      #`(define/contract (name #,@(attribute signature.decl))
-         (--> #,@(attribute signature.sig))
+         (proc/c #,@(attribute signature.sig))
          body ...)]))
 
 (module* test racket/base
@@ -27,16 +27,13 @@
   (require rackunit)
   
   (define/contract (foo x [y x] #:foo foo . rest)
-    (--> (x ([y] : (lambda (y) (equal? x y))) #:foo foo .. (rest : (listof integer?)))
-         ((z : integer?)))
+    (proc/c x ([y] : (lambda (y) (equal? x y))) #:foo foo .. (rest : (listof integer?)) -> (z : integer?))
     x)
 
-  (define/sig (foo2 (x (y : (lambda (y) (equal? x y))) #:foo foo .. (rest : (listof integer?)))
-                    ((z : integer?)))
+  (define/sig (foo2 x (y : (lambda (y) (equal? x y))) #:foo foo .. (rest : (listof integer?)) -> (z : integer?))
     x)
 
-  (define/sig (foo3 (x (y : (lambda (y) (equal? x y))) #:foo foo .. (rest : (listof integer?)))
-                    ((z : integer?)))
+  (define/sig (foo3 x (y : (lambda (y) (equal? x y))) #:foo foo .. (rest : (listof integer?)) -> (z : integer?))
     (values x x))
 
   (check-not-exn (lambda () (foo 1 1 #:foo 1 1)))
@@ -64,5 +61,5 @@
        [result integer?])
   (f x))
 
-(define/sig (test-sig ((f : (-> integer? integer?)) (x : f)) ((result : integer?)))
+(define/sig (test-sig (f : (-> integer? integer?)) (x : f) -> (result : integer?))
   (f x))

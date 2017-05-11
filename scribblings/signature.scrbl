@@ -10,8 +10,8 @@
 Syntax classes and utilities for defining function signatures with contracts, including
 an alternative syntax for indy-dependent contracts.
 
-@defform*/subs[#:literals (: ..)
-[(--> (argument ... optional-rest) (result ...))]
+@defform*/subs[#:literals (: .. ->)
+[(proc/c argument ... optional-rest -> result ...)]
 ([argument id+ctc
            (code:line keyword id+ctc)]
  [id+ctc   id-or-optional
@@ -23,18 +23,17 @@ an alternative syntax for indy-dependent contracts.
  [result (id+ctc)])
 ]{
 
-The @racket[-->] defines an indy-dependent contract like @racket[->i].  Unlike @racket[->i],
-@racket[-->] does not require contract expressions to declare dependencies on other arguments.
+The @racket[proc/c] defines an indy-dependent contract like @racket[->i].  Unlike @racket[->i],
+@racket[proc/c] does not require contract expressions to declare dependencies on other arguments.
 Instead, it infers them automatically using the names of arguments and result values declared
-in the signature. Warning: @racket[-->] is not currently as efficient as @racket[->i] and has a higher performance overhead.
+in the signature. Warning: @racket[proc/c] is not currently as efficient as @racket[->i] and has a higher performance overhead.
 
 For example, the contract:
 @racketblock[(->i ([x number?]
                    [y (x) (>=/c x)])
                   [result (x y) (and/c number? (>=/c (+ x y)))])]
 can be written as the following.
-@racketblock[(--> ((x : number?) (y : (>=/c x)))
-                  ((result : (and/c number? (>=/c (+ x y))))))]
+@racketblock[(proc/c (x : number?) (y : (>=/c x)) -> (result : (and/c number? (>=/c (+ x y)))))]
 
 Unlike @racket[->i], mandatory and optional arguments are not specified separately.
 The contract
@@ -42,8 +41,7 @@ The contract
                   (#:y [y (x) (>=/c x)])
                   [result (x y) (and/c number? (>=/c (+ x y)))])]
 can be written as the following.
-@racketblock[(--> (#:x (x : number?) #:y ([y] : (>=/c x)))
-		  ((result : (and/c number? (>=/c (+ x y))))))]
+@racketblock[(proc/c #:x (x : number?) #:y ([y] : (>=/c x)) -> (result : (and/c number? (>=/c (+ x y)))))]
 
 Like @racket[->i], the contract expressions are not always evaluated in
 order. If there are optional arguments that are not supplied, then
@@ -52,7 +50,7 @@ called @racket[the-unsupplied-arg] value.
 }
 
 @defform*/subs[#:literals (: ..)
-[(define/sig (id (argument ... optional-rest) (result ...))
+[(define/sig (id argument ... optional-rest -> result ...)
    body ...)]
 ([argument id+ctc
            (code:line keyword id+ctc)]
@@ -68,11 +66,10 @@ called @racket[the-unsupplied-arg] value.
 Defines a procedure with the given signature and applies the corresponding contract.
 
 For example,
-@racketblock[(define/sig (add (#:x (x : number?) #:y ([y x] : (>=/c x))) ((result : (and/c number? (>=/c (+ x y))))))
+@racketblock[(define/sig (add #:x (x : number?) #:y ([y x] : (>=/c x)) -> (result : (and/c number? (>=/c (+ x y)))))
                (+ x y))]
 is equivalent to the following.
 @racketblock[(define/contract (add #:x x #:y [y x])
-               (--> (#:x (x : number?) #:y ([y] : (>=/c x)))
-	            ((result : (and/c number? (>=/c (+ x y))))))
+               (proc/c (#:x (x : number?) #:y ([y] : (>=/c x))) -> (result : (and/c number? (>=/c (+ x y)))))
                (+ x y))]
 }
