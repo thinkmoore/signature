@@ -5,6 +5,7 @@
                      specs->signature))
 
 (require (for-syntax racket/base
+                     racket/contract
                      racket/list
                      racket/match
                      racket/syntax

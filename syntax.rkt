@@ -2,7 +2,8 @@
 
 (provide (all-defined-out))
 
-(require racket/function
+(require (for-template racket/contract)
+         racket/function
          racket/list
          syntax/parse)
 
