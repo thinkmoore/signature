@@ -160,10 +160,16 @@
   (define rest-arg
     (let ([filtered (filter rest-spec? specs)])
       (and (not (empty? filtered)) (first filtered))))
-  #`(filter (lambda (val) (not (unsupplied-arg? val)))
-            (list* #,@(map spec-id mandatory-args)
-                   #,@(map spec-id optional-args)
-                   #,(if rest-arg (spec-id rest-arg) #'empty))))
+  #`(append
+     (filter (lambda (val) (not (unsupplied-arg? val)))
+             (list #,@(map spec-id mandatory-args)
+                   #,@(map spec-id optional-args)))
+     #,(if rest-arg
+           #`(let ([r #,(spec-id rest-arg)])
+               (if (unsupplied-arg? r)
+                   empty
+                   r))
+           #'empty)))
 
 (define-for-syntax (make-sorted-keyword-args specs)
   (define keyword-specs

@@ -306,7 +306,7 @@
 
 (define-splicing-syntax-class sig
   #:datum-literals (: .. ->)
-  #:attributes (arity specs decl invoc)
+  #:attributes (arity specs decl invoc invoc-rest)
   (pattern (~seq arg:arg ... -> result:result ...)
            #:attr arity (arity (length (filter identity (attribute arg.mandatory-id)))
                                (length (filter identity (attribute arg.optional-id)))
@@ -342,6 +342,7 @@
                                                      (attribute result.ctc)))
            #:attr decl #`(#,@(apply append-syntax (attribute arg.decl)))
            #:attr invoc #`(#,@(apply append-syntax (attribute arg.invoc)))
+           #:attr invoc-rest #'empty
            #:fail-when (duplicate-ids? (syntax->list #'ids))
            "duplicate identifiers in signature"
            #:fail-when (let ([result-ids (map spec-id (filter result-spec? (attribute specs)))]
@@ -391,7 +392,8 @@
                                                      (attribute result.id)
                                                      (attribute result.ctc)))
            #:attr decl #`(#,@(apply append-syntax (attribute arg.decl)) . rest.id)
-           #:attr invoc #`(#,@(apply append-syntax (attribute arg.invoc)) . rest.id)
+           #:attr invoc #`(#,@(apply append-syntax (attribute arg.invoc)))
+           #:attr invoc-rest #'rest.id
            #:fail-when (duplicate-ids? (syntax->list #'ids))
            "duplicate identifiers in signature"
            #:fail-when (let ([result-ids (map spec-id (filter result-spec? (attribute specs)))]
@@ -405,7 +407,7 @@
 
 (define-splicing-syntax-class sig/defaults
   #:datum-literals (: .. ->)
-  #:attributes (arity decl sig invoc)
+  #:attributes (arity decl sig invoc invoc-rest)
   (pattern (~seq arg:arg/defaults ... -> result:result ...)
            #:attr arity (arity (length (filter identity (attribute arg.mandatory-id)))
                                (length (filter identity (attribute arg.optional-id)))
@@ -415,6 +417,7 @@
            #:attr sig #`(#,@(apply append-syntax (attribute arg.sig)) -> result ...)
            #:attr decl #`(#,@(apply append-syntax (attribute arg.decl)))
            #:attr invoc #`(#,@(apply append-syntax (attribute arg.invoc)))
+           #:attr invoc-rest #'empty
            #:fail-when (duplicate-ids? (append (attribute arg.mandatory-id)
                                                (attribute arg.optional-id)
                                                (attribute arg.mandatory-kw-id)
@@ -429,7 +432,8 @@
                                (length (attribute result)))
            #:attr sig #`(#,@(apply append-syntax (attribute arg.sig)) .. rest -> result ...)
            #:attr decl #`(#,@(apply append-syntax (attribute arg.decl)) . rest.id)
-           #:attr invoc #`(#,@(apply append-syntax (attribute arg.invoc)) . rest.id)
+           #:attr invoc #`(#,@(apply append-syntax (attribute arg.invoc)))
+           #:attr invoc-rest #'rest.id
            #:fail-when (duplicate-ids? (append (attribute arg.mandatory-id)
                                                (attribute arg.optional-id)
                                                (attribute arg.mandatory-kw-id)
