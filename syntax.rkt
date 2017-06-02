@@ -2,7 +2,8 @@
 
 (provide (all-defined-out))
 
-(require racket/function
+(require (for-template racket/contract)
+         racket/function
          racket/list
          syntax/parse)
 
@@ -258,7 +259,11 @@
         [(e ...)
          (for/fold ([uses empty])
                    ([use-set (in-list (map (lambda (e) (get-expr-uses ids e)) (syntax->list #'(e ...))))])
-           (use-set-union uses use-set))])
+           (use-set-union uses use-set))]
+        [l:boolean empty]
+        [l:str empty]
+        [l:char empty]
+        [l:number empty])
       empty))
 
 (define (duplicate-ids? id-list)
