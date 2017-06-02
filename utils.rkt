@@ -172,9 +172,10 @@
                   specs)
           keyword<?
           #:key (lambda (spec)
-                  (if (mandatory-keyword-spec? spec)
-                      (mandatory-keyword-spec-keyword spec)
-                      (optional-keyword-spec-keyword spec)))))
+                  (syntax->datum
+                   (if (mandatory-keyword-spec? spec)
+                       (mandatory-keyword-spec-keyword spec)
+                       (optional-keyword-spec-keyword spec))))))
   #`(filter (lambda (val) (not (unsupplied-arg? val)))
             (list #,@(map spec-id keyword-specs))))
 
